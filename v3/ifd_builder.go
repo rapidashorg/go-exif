@@ -1077,7 +1077,13 @@ func (ib *IfdBuilder) AddTagsFromExisting(ifd *Ifd, includeTagIds []uint16, excl
 			// Non-IFD tag.
 
 			rawBytes, err := ite.GetRawBytes()
-			log.PanicIf(err)
+			if err != nil {
+				if err == exifundefined.ErrUnparseableValue {
+					continue
+				}
+
+				log.Panic(err)
+			}
 
 			value := NewIfdBuilderTagValueFromBytes(rawBytes)
 
