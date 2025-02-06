@@ -2,6 +2,7 @@ package exifcommon
 
 import (
 	"errors"
+	"fmt"
 	"io"
 
 	"encoding/binary"
@@ -161,8 +162,13 @@ func (vc *ValueContext) readRawEncoded() (rawBytes []byte, err error) {
 
 	rawBytes = make([]byte, vc.unitCount*unitSizeRaw)
 
-	_, err = io.ReadFull(vc.rs, rawBytes)
-	log.PanicIf(err)
+	n, err := io.ReadFull(vc.rs, rawBytes)
+	if err == io.EOF || err == io.ErrUnexpectedEOF {
+		fmt.Printf("Partial read: only %d bytes were read\n", n)
+		rawBytes = rawBytes[:n] // Truncate to the actual data
+	} else {
+		log.PanicIf(err)
+	}
 
 	return rawBytes, nil
 }
